@@ -7,16 +7,18 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <MessageUI/MessageUI.h>
 #import "MWPhoto.h"
 #import "MWPhotoProtocol.h"
 #import "MWCaptionView.h"
 
-// Debug Logging
-#if 0 // Set to 1 to enable debug logging
-#define MWLog(x, ...) NSLog(x, ## __VA_ARGS__);
-#else
-#define MWLog(x, ...)
-#endif
+
+typedef enum {
+	PHOTO_NONE,
+	PHOTO_RESTAURANT,
+	PHOTO_FOOD_REPORT
+} PhotoVisualizerType;
+
 
 @class MWPhotoBrowser;
 
@@ -38,9 +40,9 @@
 
 @end
 
-@interface MWPhotoBrowser : UIViewController <UIScrollViewDelegate, UIActionSheetDelegate>
+@interface MWPhotoBrowser : UIViewController <UIScrollViewDelegate, UIActionSheetDelegate, MFMailComposeViewControllerDelegate>
 
-@property (nonatomic, weak) IBOutlet id<MWPhotoBrowserDelegate> delegate;
+@property (strong) IBOutlet id<MWPhotoBrowserDelegate> delegate;
 @property (nonatomic) BOOL zoomPhotosToFill;
 @property (nonatomic) BOOL displayNavArrows;
 @property (nonatomic) BOOL displayActionButton;
@@ -49,17 +51,13 @@
 @property (nonatomic) BOOL enableGrid;
 @property (nonatomic) BOOL enableSwipeToDismiss;
 @property (nonatomic) BOOL startOnGrid;
-@property (nonatomic) BOOL autoPlayOnAppear;
 @property (nonatomic) NSUInteger delayToHideElements;
 @property (nonatomic, readonly) NSUInteger currentIndex;
 
-// Customise image selection icons as they are the only icons with a colour tint
-// Icon should be located in the app's main bundle
-@property (nonatomic, strong) NSString *customImageSelectedIconName;
-@property (nonatomic, strong) NSString *customImageSelectedSmallIconName;
+@property (assign) PhotoVisualizerType browserType;
 
 // Init
-- (id)initWithPhotos:(NSArray *)photosArray;
+- (id)initWithPhotos:(NSArray *)photosArray  __attribute__((deprecated("Use initWithDelegate: instead"))); // Depreciated
 - (id)initWithDelegate:(id <MWPhotoBrowserDelegate>)delegate;
 
 // Reloads the photo browser and refetches data
@@ -67,9 +65,12 @@
 
 // Set page that photo browser starts on
 - (void)setCurrentPhotoIndex:(NSUInteger)index;
+- (void)setInitialPageIndex:(NSUInteger)index  __attribute__((deprecated("Use setCurrentPhotoIndex: instead"))); // Depreciated
 
 // Navigation
 - (void)showNextPhotoAnimated:(BOOL)animated;
 - (void)showPreviousPhotoAnimated:(BOOL)animated;
+
+- (id<MWPhoto>)photoAtIndex:(NSUInteger)index;
 
 @end

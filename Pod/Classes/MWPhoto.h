@@ -7,8 +7,9 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <Photos/Photos.h>
 #import "MWPhotoProtocol.h"
+
+#import "Customer.h"
 
 // This class models a photo/image and it's caption
 // If you want to handle photos, caching, decompression
@@ -16,21 +17,29 @@
 // conforms to MWPhotoProtocol
 @interface MWPhoto : NSObject <MWPhoto>
 
-@property (nonatomic, strong) NSString *caption;
-@property (nonatomic, strong) NSURL *videoURL;
-@property (nonatomic) BOOL emptyImage;
-@property (nonatomic) BOOL isVideo;
+@property(nonatomic, strong) Customer *customer;
+@property(nonatomic, strong) NSString *photoComment;
+@property(nonatomic, strong) NSString *restaurantName;
+@property(nonatomic, strong) NSString *restaurantSpeciality;
+@property NSInteger restaurantId;
+@property(nonatomic, strong) NSURL *restaurantMainPicture;
+
+
+@property(nonatomic, strong) NSString *caption;
+@property(nonatomic, readonly) UIImage *image;
+@property(nonatomic, readonly) NSURL *photoURL;
+@property(nonatomic, readonly) NSString *filePath  __attribute__((deprecated("Use photoURL"))); // Depreciated
 
 + (MWPhoto *)photoWithImage:(UIImage *)image;
-+ (MWPhoto *)photoWithURL:(NSURL *)url;
-+ (MWPhoto *)photoWithAsset:(PHAsset *)asset targetSize:(CGSize)targetSize;
-+ (MWPhoto *)videoWithURL:(NSURL *)url; // Initialise video with no poster image
 
-- (id)init;
++ (MWPhoto *)photoWithFilePath:(NSString *)path  __attribute__((deprecated("Use photoWithURL: with a file URL"))); // Depreciated
++ (MWPhoto *)photoWithURL:(NSURL *)url;
+
 - (id)initWithImage:(UIImage *)image;
+
 - (id)initWithURL:(NSURL *)url;
-- (id)initWithAsset:(PHAsset *)asset targetSize:(CGSize)targetSize;
-- (id)initWithVideoURL:(NSURL *)url;
+
+- (id)initWithFilePath:(NSString *)path  __attribute__((deprecated("Use initWithURL: with a file URL"))); // Depreciated
 
 @end
 

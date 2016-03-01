@@ -8,6 +8,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import "Customer.h"
+
 // Notifications
 #define MWPHOTO_LOADING_DID_END_NOTIFICATION @"MWPHOTO_LOADING_DID_END_NOTIFICATION"
 #define MWPHOTO_PROGRESS_NOTIFICATION @"MWPHOTO_PROGRESS_NOTIFICATION"
@@ -54,16 +56,16 @@
 
 @optional
 
-// If photo is empty, in which case, don't show loading error icons
-@property (nonatomic) BOOL emptyImage;
-
-// Video
-@property (nonatomic) BOOL isVideo;
-- (void)getVideoURL:(void (^)(NSURL *url))completion;
-
 // Return a caption string to be displayed over the image
 // Return nil to display no caption
 - (NSString *)caption;
+
+- (Customer *)customer;
+- (NSString *)photoComment;
+- (NSString *)restaurantName;
+- (NSString *)restaurantSpeciality;
+- (NSURL *)restaurantMainPicture;
+- (NSInteger) restaurantId;
 
 // Cancel any background loading of image data
 - (void)cancelAnyLoading;

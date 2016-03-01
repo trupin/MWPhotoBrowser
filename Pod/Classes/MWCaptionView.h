@@ -9,7 +9,10 @@
 #import <UIKit/UIKit.h>
 #import "MWPhotoProtocol.h"
 
-@interface MWCaptionView : UIToolbar
+@interface MWCaptionView : UIToolbar {
+	id <MWPhoto> _photo;
+	UILabel *_label;
+}
 
 // Init
 - (id)initWithPhoto:(id<MWPhoto>)photo;

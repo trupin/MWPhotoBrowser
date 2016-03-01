@@ -8,13 +8,12 @@
 
 #import <UIKit/UIKit.h>
 #import "MWPhotoBrowser.h"
+#import "PSTCollectionView.h"
 
-@interface MWGridViewController : UICollectionViewController {}
+@interface MWGridViewController : PSTCollectionViewController {}
 
 @property (nonatomic, assign) MWPhotoBrowser *browser;
 @property (nonatomic) BOOL selectionMode;
 @property (nonatomic) CGPoint initialContentOffset;
-
-- (void)adjustOffsetsAsRequired;
 
 @end

@@ -6,18 +6,14 @@
 //
 //
 
-#import <DACircularProgress/DACircularProgressView.h>
 #import "MWGridCell.h"
 #import "MWCommon.h"
 #import "MWPhotoBrowserPrivate.h"
-#import "UIImage+MWPhotoBrowser.h"
-
-#define VIDEO_INDICATOR_PADDING 10
+#import "DACircularProgressView.h"
 
 @interface MWGridCell () {
     
     UIImageView *_imageView;
-    UIImageView *_videoIndicator;
     UIImageView *_loadingError;
 	DACircularProgressView *_loadingIndicator;
     UIButton *_selectedButton;
@@ -30,7 +26,7 @@
 
 - (id)initWithFrame:(CGRect)frame {
     if ((self = [super initWithFrame:frame])) {
-
+        
         // Grey background
         self.backgroundColor = [UIColor colorWithWhite:0.12 alpha:1];
         
@@ -42,21 +38,13 @@
         _imageView.autoresizesSubviews = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
         [self addSubview:_imageView];
         
-        // Video Image
-        _videoIndicator = [UIImageView new];
-        _videoIndicator.hidden = NO;
-        UIImage *videoIndicatorImage = [UIImage imageForResourcePath:@"MWPhotoBrowser.bundle/VideoOverlay" ofType:@"png" inBundle:[NSBundle bundleForClass:[self class]]];
-        _videoIndicator.frame = CGRectMake(self.bounds.size.width - videoIndicatorImage.size.width - VIDEO_INDICATOR_PADDING, self.bounds.size.height - videoIndicatorImage.size.height - VIDEO_INDICATOR_PADDING, videoIndicatorImage.size.width, videoIndicatorImage.size.height);
-        _videoIndicator.image = videoIndicatorImage;
-        _videoIndicator.autoresizesSubviews = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin;
-        [self addSubview:_videoIndicator];
-        
         // Selection button
         _selectedButton = [UIButton buttonWithType:UIButtonTypeCustom];
         _selectedButton.contentMode = UIViewContentModeTopRight;
         _selectedButton.adjustsImageWhenHighlighted = NO;
-        [_selectedButton setImage:[UIImage imageForResourcePath:@"MWPhotoBrowser.bundle/ImageSelectedSmallOff" ofType:@"png" inBundle:[NSBundle bundleForClass:[self class]]] forState:UIControlStateNormal];
-        [_selectedButton setImage:[UIImage imageForResourcePath:@"MWPhotoBrowser.bundle/ImageSelectedSmallOn" ofType:@"png" inBundle:[NSBundle bundleForClass:[self class]]] forState:UIControlStateSelected];
+        [_selectedButton setImage:nil forState:UIControlStateNormal];
+        [_selectedButton setImage:[UIImage imageNamed:@"MWPhotoBrowser.bundle/images/ImageSelectedSmallOff.png"] forState:UIControlStateNormal];
+        [_selectedButton setImage:[UIImage imageNamed:@"MWPhotoBrowser.bundle/images/ImageSelectedSmallOn.png"] forState:UIControlStateSelected];
         [_selectedButton addTarget:self action:@selector(selectionButtonPressed) forControlEvents:UIControlEventTouchDown];
         _selectedButton.hidden = YES;
         _selectedButton.frame = CGRectMake(0, 0, 44, 44);
@@ -65,8 +53,13 @@
 		// Loading indicator
 		_loadingIndicator = [[DACircularProgressView alloc] initWithFrame:CGRectMake(0, 0, 40.0f, 40.0f)];
         _loadingIndicator.userInteractionEnabled = NO;
-        _loadingIndicator.thicknessRatio = 0.1;
-        _loadingIndicator.roundedCorners = NO;
+        if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7")) {
+            _loadingIndicator.thicknessRatio = 0.1;
+            _loadingIndicator.roundedCorners = NO;
+        } else {
+            _loadingIndicator.thicknessRatio = 0.2;
+            _loadingIndicator.roundedCorners = YES;
+        }
 		[self addSubview:_loadingIndicator];
         
         // Listen for photo loading notifications
@@ -85,14 +78,6 @@
 
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-}
-
-- (void)setGridController:(MWGridViewController *)gridController {
-    _gridController = gridController;
-    // Set custom selection image if required
-    if (_gridController.browser.customImageSelectedSmallIconName) {
-        [_selectedButton setImage:[UIImage imageNamed:_gridController.browser.customImageSelectedSmallIconName] forState:UIControlStateSelected];
-    }
 }
 
 #pragma mark - View
@@ -124,11 +109,6 @@
 
 - (void)setPhoto:(id <MWPhoto>)photo {
     _photo = photo;
-    if ([photo respondsToSelector:@selector(isVideo)]) {
-        _videoIndicator.hidden = !photo.isVideo;
-    } else {
-        _videoIndicator.hidden = YES;
-    }
     if (_photo) {
         if (![_photo underlyingImage]) {
             [self showLoadingIndicator];
@@ -192,22 +172,19 @@
 }
 
 - (void)showImageFailure {
-    // Only show if image is not empty
-    if (![_photo respondsToSelector:@selector(emptyImage)] || !_photo.emptyImage) {
-        if (!_loadingError) {
-            _loadingError = [UIImageView new];
-            _loadingError.image = [UIImage imageForResourcePath:@"MWPhotoBrowser.bundle/ImageError" ofType:@"png" inBundle:[NSBundle bundleForClass:[self class]]];
-            _loadingError.userInteractionEnabled = NO;
-            [_loadingError sizeToFit];
-            [self addSubview:_loadingError];
-        }
-        _loadingError.frame = CGRectMake(floorf((self.bounds.size.width - _loadingError.frame.size.width) / 2.),
-                                         floorf((self.bounds.size.height - _loadingError.frame.size.height) / 2),
-                                         _loadingError.frame.size.width,
-                                         _loadingError.frame.size.height);
+    if (!_loadingError) {
+        _loadingError = [UIImageView new];
+        _loadingError.image = [UIImage imageNamed:@"MWPhotoBrowser.bundle/images/ImageError.png"];
+        _loadingError.userInteractionEnabled = NO;
+        [_loadingError sizeToFit];
+        [self addSubview:_loadingError];
     }
     [self hideLoadingIndicator];
     _imageView.image = nil;
+    _loadingError.frame = CGRectMake(floorf((self.bounds.size.width - _loadingError.frame.size.width) / 2.),
+                                     floorf((self.bounds.size.height - _loadingError.frame.size.height) / 2),
+                                     _loadingError.frame.size.width,
+                                     _loadingError.frame.size.height);
 }
 
 - (void)hideImageFailure {
@@ -220,15 +197,12 @@
 #pragma mark - Notifications
 
 - (void)setProgressFromNotification:(NSNotification *)notification {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        NSDictionary *dict = [notification object];
-        id <MWPhoto> photoWithProgress = [dict objectForKey:@"photo"];
-        if (photoWithProgress == _photo) {
-//            NSLog(@"%f", [[dict valueForKey:@"progress"] floatValue]);
-            float progress = [[dict valueForKey:@"progress"] floatValue];
-            _loadingIndicator.progress = MAX(MIN(1, progress), 0);
-        }
-    });
+    NSDictionary *dict = [notification object];
+    id <MWPhoto> photoWithProgress = [dict objectForKey:@"photo"];
+    if (photoWithProgress == _photo) {
+        float progress = [[dict valueForKey:@"progress"] floatValue];
+        _loadingIndicator.progress = MAX(MIN(1, progress), 0);
+    }
 }
 
 - (void)handleMWPhotoLoadingDidEndNotification:(NSNotification *)notification {
